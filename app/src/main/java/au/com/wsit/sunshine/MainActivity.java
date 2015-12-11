@@ -2,8 +2,10 @@ package au.com.wsit.sunshine;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -45,17 +47,14 @@ public class MainActivity extends ActionBarActivity {
     ArrayAdapter<String> adapter;
 
 
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Log.i(TAG, "onCreate called");
+
         weatherData = (ListView) findViewById(R.id.listview_forecast);
-
-
 
 
         String sampleData[] = {
@@ -77,8 +76,7 @@ public class MainActivity extends ActionBarActivity {
 
         weatherData.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-            {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 //Toast.makeText(MainActivity.this, adapter.getItem(position), Toast.LENGTH_LONG).show();
                 // Create an intent object to start the detail activity
                 Intent intent = new Intent(MainActivity.this, DetailActivity.class);
@@ -89,14 +87,44 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
+    }
 
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+
+        Log.i(TAG, "onStart Called");
+        updateWeather();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        Log.i(TAG, "onPause called");
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        Log.i(TAG, "onResume called");
 
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        updateWeather();
+    protected void onStop() {
+        super.onStop();
+
+        Log.i(TAG, "onStop called");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        Log.i(TAG, "onDestroy called");
     }
 
     private void updateWeather()
@@ -414,5 +442,13 @@ public class MainActivity extends ActionBarActivity {
         startActivity(locationIntent);
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+    }
 
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+    }
 }

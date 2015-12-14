@@ -1,5 +1,6 @@
 package au.com.wsit.sunshine;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
@@ -36,6 +37,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import au.com.wsit.sunshine.data.WeatherContract;
+import au.com.wsit.sunshine.data.WeatherDbHelper;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -110,6 +114,9 @@ public class MainActivity extends ActionBarActivity {
     {
         super.onResume();
         Log.i(TAG, "onResume called");
+
+
+
 
     }
 
@@ -390,6 +397,9 @@ public class MainActivity extends ActionBarActivity {
 
 
     }
+
+
+
 
 
 

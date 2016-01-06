@@ -1,9 +1,57 @@
-<TextView
-    android:gravity="center"
-    android:paddingTop="14dp"
-    android:paddingBottom="14dp"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="Today - Sunny - 88 / 63"
-    android:id="@+id/list_item_forecast_textview"
-    xmlns:android="http://schemas.android.com/apk/res/android"/>
+<LinearLayout
+    android:layout_height="fill_parent"
+    android:layout_width="fill_parent"
+    android:orientation="horizontal"
+    android:padding="16dp"
+    android:gravity="center_horizontal"
+    android:minHeight="?android:attr/listPreferredItemHeight"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    <ImageView
+        android:src="@drawable/sun"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/list_item_icon"
+        />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:paddingLeft="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TOMORROW"
+            android:id="@+id/list_item_date_textview"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Clear"
+            android:id="@+id/list_item_forecast_textview"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="21"
+            android:id="@+id/list_item_high_textview"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="8"
+            android:id="@+id/list_item_low_textview"/>
+    </LinearLayout>
+</LinearLayout>
+

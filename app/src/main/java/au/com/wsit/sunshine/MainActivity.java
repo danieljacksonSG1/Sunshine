@@ -3,11 +3,15 @@ package au.com.wsit.sunshine;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.format.Formatter;
@@ -36,20 +40,28 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Currency;
 import java.util.List;
 
+import au.com.wsit.sunshine.adapters.WeatherListAdapter;
 import au.com.wsit.sunshine.data.WeatherContract;
 import au.com.wsit.sunshine.data.WeatherDbHelper;
+import au.com.wsit.sunshine.utils.WeatherItems;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity{
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
     ListView weatherData;
+    private int mPosition = ListView.INVALID_POSITION;
+    //ArrayAdapter<String> adapter;
+    WeatherListAdapter mWeatherListAdapter;
 
-    ArrayAdapter<String> adapter;
+    // Stores the forecast for the next 7 days
+    String[] sevenDayForecast;
 
+    WeatherItems[] mItems;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,37 +71,6 @@ public class MainActivity extends ActionBarActivity {
         Log.i(TAG, "onCreate called");
 
         weatherData = (ListView) findViewById(R.id.listview_forecast);
-
-
-        String sampleData[] = {
-                "Today - Sunny - 38",
-                "Tomorrow - Cloudy - 20",
-                "Wednesday - Sunny - 30",
-                "Thursday - Rain - 25",
-                "Friday - Sunny - 30",
-                "Saturday - Sunny - 35",
-                "Sunday - Rain - 19"
-        };
-
-
-        final List<String> weekForecast = new ArrayList<String>(Arrays.asList(sampleData));
-
-        adapter = new ArrayAdapter<String>(this, R.layout.list_item_forecast, R.id.list_item_forecast_textview, weekForecast);
-
-        weatherData.setAdapter(adapter);
-
-        weatherData.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //Toast.makeText(MainActivity.this, adapter.getItem(position), Toast.LENGTH_LONG).show();
-                // Create an intent object to start the detail activity
-                Intent intent = new Intent(MainActivity.this, DetailActivity.class);
-                // Add the clicked on item's data to the intent
-                intent.putExtra(SunshineConstants.KEY_FORECAST_DATA, adapter.getItem(position));
-                startActivity(intent);
-
-            }
-        });
 
     }
 
@@ -114,9 +95,6 @@ public class MainActivity extends ActionBarActivity {
     {
         super.onResume();
         Log.i(TAG, "onResume called");
-
-
-
 
     }
 
@@ -149,7 +127,14 @@ public class MainActivity extends ActionBarActivity {
         // Refresh the weather data
         FetchWeatherTask weatherTask = new FetchWeatherTask();
         weatherTask.execute(location, temperatureUnit);
+
+        // Set in the adapter
+
+
+
+
     }
+
 
 
     // Async task input parameters
@@ -253,6 +238,7 @@ public class MainActivity extends ActionBarActivity {
             try
             {
                 getWeatherDataFromJson(forecastJsonStr, 7);
+                sevenDayForecast = getWeatherDataFromJson(forecastJsonStr, 7);
                 return getWeatherDataFromJson(forecastJsonStr, 7);
             }
             catch (JSONException e)
@@ -264,20 +250,9 @@ public class MainActivity extends ActionBarActivity {
 
         }
 
-        @Override
-        protected void onPostExecute(String[] result)
-        {
-            //super.onPostExecute(strings);
-            if (result != null)
-            {
-                adapter.clear();
-                for (String dayForecastStr : result)
-                {
-                    adapter.add(dayForecastStr);
-                }
-            }
 
-        }
+
+
     }
 
     /* The date/time conversion code is going to be moved outside the asynctask later,
@@ -341,6 +316,11 @@ public class MainActivity extends ActionBarActivity {
         dayTime = new Time();
 
         String[] resultStrs = new String[numDays];
+
+        // Init an array of weather items to store the data
+
+        mItems = new WeatherItems[weatherArray.length()];
+
         for(int i = 0; i < weatherArray.length(); i++) {
             // For now, using the format "Day, description, hi/low"
             String day;
@@ -370,7 +350,29 @@ public class MainActivity extends ActionBarActivity {
 
             highAndLow = formatHighLows(high, low);
             resultStrs[i] = day + " - " + description + " - " + highAndLow;
+
+            // Set the data for the day in the setter
+            WeatherItems items = new WeatherItems();
+            items.setDate(day);
+            items.setCondition(description);
+            items.setHighTemp(high);
+            items.setLowTemp(low);
+
+            // Set the data into the array
+            mItems[i] = items;
+
         }
+
+    runOnUiThread(new Runnable() {
+    @Override
+    public void run() {
+        mWeatherListAdapter = new WeatherListAdapter(MainActivity.this, mItems);
+        weatherData.setAdapter(mWeatherListAdapter);
+    }
+    });
+
+
+
 
 
         return resultStrs;

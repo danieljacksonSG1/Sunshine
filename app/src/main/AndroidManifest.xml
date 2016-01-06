@@ -30,6 +30,22 @@
 
         <activity android:name=".SettingsActivity"
                   android:parentActivityName=".MainActivity" />
+
+        <provider
+            android:authorities="au.com.wsit.android.sunshine"
+            android:name=".data.WeatherProvider"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="au.com.wsit.LICENSE_TO_KILL"/>
+
+
+
     </application>
+
+    <permission android:name="au.com.wsit.LICENSE_TO_KILL"
+                android:protectionLevel="dangerous"
+                android:label="Licenced to Kill">
+
+    </permission>
 
 </manifest>

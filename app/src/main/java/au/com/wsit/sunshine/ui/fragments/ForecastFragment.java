@@ -1,31 +1,23 @@
-package au.com.wsit.sunshine;
+package au.com.wsit.sunshine.ui.fragments;
 
-import android.content.ContentValues;
-import android.content.Intent;
+
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.PersistableBundle;
-import android.preference.PreferenceManager;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.text.format.Formatter;
+import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.text.format.Time;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.GridLayout;
-import android.widget.GridView;
 import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.ProgressBar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -38,84 +30,117 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Currency;
-import java.util.List;
 
+import au.com.wsit.sunshine.R;
 import au.com.wsit.sunshine.adapters.WeatherListAdapter;
-import au.com.wsit.sunshine.data.WeatherContract;
-import au.com.wsit.sunshine.data.WeatherDbHelper;
+import au.com.wsit.sunshine.ui.MainActivity;
+import au.com.wsit.sunshine.utils.SunshineConstants;
+import au.com.wsit.sunshine.utils.Utility;
 import au.com.wsit.sunshine.utils.WeatherItems;
 
+/**
+ * Created by guyb on 7/01/16.
+ */
+public class ForecastFragment extends Fragment
+{
 
-public class MainActivity extends ActionBarActivity{
-
-    public static final String TAG = MainActivity.class.getSimpleName();
+    public static final String TAG = ForecastFragment.class.getSimpleName();
 
     ListView weatherData;
-    private int mPosition = ListView.INVALID_POSITION;
-    //ArrayAdapter<String> adapter;
     WeatherListAdapter mWeatherListAdapter;
+    ProgressBar loader;
 
     // Stores the forecast for the next 7 days
     String[] sevenDayForecast;
 
     WeatherItems[] mItems;
 
+
+
+
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
+        View rootView = inflater.inflate(R.layout.fragment_forecast, container, false);
 
-        Log.i(TAG, "onCreate called");
+        weatherData = (ListView) rootView.findViewById(R.id.listview_forecast);
+        loader = (ProgressBar)rootView.findViewById(R.id.loadingWeather);
 
-        weatherData = (ListView) findViewById(R.id.listview_forecast);
+        updateWeather();
 
+        weatherData.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+
+                if (MainActivity.twoPaneMode)
+                {
+                    // Put the data into a bundle
+                    Bundle bundle = new Bundle();
+                    bundle.putString(SunshineConstants.KEY_WEATHER_CONDITION, mItems[position].getCondition());
+                    bundle.putString(SunshineConstants.KEY_DATE, mItems[position].getDate());
+                    bundle.putString(SunshineConstants.KEY_HIGH_TEMP, mItems[position].getHighTemp());
+                    bundle.putString(SunshineConstants.KEY_LOW_TEMP, mItems[position].getLowTemp());
+                    bundle.putString(SunshineConstants.KEY_PRESSUE, mItems[position].getPressue());
+                    bundle.putString(SunshineConstants.KEY_WIND, mItems[position].getWind());
+                    bundle.putString(SunshineConstants.KEY_HUMIDITY, mItems[position].getHumidity());
+
+                    DetailFragment detailFragment = new DetailFragment();
+                    detailFragment.setArguments(bundle);
+                    getActivity().getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.weather_detail_container, detailFragment)
+                            .commit();
+
+                }
+                else
+                {
+                    // Put the data into a bundle
+                    Bundle bundle = new Bundle();
+                    bundle.putString(SunshineConstants.KEY_WEATHER_CONDITION, mItems[position].getCondition());
+                    bundle.putString(SunshineConstants.KEY_DATE, mItems[position].getDate());
+                    bundle.putString(SunshineConstants.KEY_HIGH_TEMP, mItems[position].getHighTemp());
+                    bundle.putString(SunshineConstants.KEY_LOW_TEMP, mItems[position].getLowTemp());
+                    bundle.putString(SunshineConstants.KEY_PRESSUE, mItems[position].getPressue());
+                    bundle.putString(SunshineConstants.KEY_WIND, mItems[position].getWind());
+                    bundle.putString(SunshineConstants.KEY_HUMIDITY, mItems[position].getHumidity());
+
+                    DetailFragment detailFragment = new DetailFragment();
+                    detailFragment.setArguments(bundle);
+                    getActivity().getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.mainView, detailFragment)
+                            .addToBackStack(null)
+                            .commit();
+                }
+
+
+
+
+
+
+            }
+        });
+
+        return rootView;
     }
 
     @Override
-    protected void onStart()
-    {
-        super.onStart();
+    public void onResume() {
+        super.onResume();
 
-        Log.i(TAG, "onStart Called");
+
         updateWeather();
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
 
-        Log.i(TAG, "onPause called");
-    }
-
-    @Override
-    protected void onResume()
-    {
-        super.onResume();
-        Log.i(TAG, "onResume called");
-
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-        Log.i(TAG, "onStop called");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        Log.i(TAG, "onDestroy called");
-    }
-
-    private void updateWeather()
+    public void updateWeather()
     {
 
-        SharedPreferences mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        Log.i(TAG, "Updating weather");
+        loader.setVisibility(View.VISIBLE);
+        SharedPreferences mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         String location = mSharedPreferences.getString(getString(R.string.key_pref_location), getString(R.string.location_default));
         String temperatureUnit = mSharedPreferences.getString(getString(R.string.temperature_unit), getString(R.string.metric));
@@ -128,14 +153,7 @@ public class MainActivity extends ActionBarActivity{
         FetchWeatherTask weatherTask = new FetchWeatherTask();
         weatherTask.execute(location, temperatureUnit);
 
-        // Set in the adapter
-
-
-
-
     }
-
-
 
     // Async task input parameters
     // 1. - Your input when you "Execute"
@@ -249,15 +267,11 @@ public class MainActivity extends ActionBarActivity{
 
 
         }
-
-
-
-
     }
 
     /* The date/time conversion code is going to be moved outside the asynctask later,
- * so for convenience we're breaking it out into its own method now.
- */
+* so for convenience we're breaking it out into its own method now.
+*/
     private String getReadableDateString(long time){
         // Because the API returns a unix timestamp (measured in seconds),
         // it must be converted to milliseconds in order to be converted to valid date.
@@ -295,6 +309,12 @@ public class MainActivity extends ActionBarActivity{
         final String OWM_MIN = "min";
         final String OWM_DESCRIPTION = "main";
 
+        final String OWM_PRESSURE = "pressure";
+        final String OWM_HUMIDITY = "humidity";
+        final String OWM_SPEED = "speed";
+
+        boolean isMetric = true;
+
         JSONObject forecastJson = new JSONObject(forecastJsonStr);
         JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
 
@@ -321,14 +341,31 @@ public class MainActivity extends ActionBarActivity{
 
         mItems = new WeatherItems[weatherArray.length()];
 
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        if (pref.getString(getString(R.string.temperature_unit), "Metric").equals("Metric"))
+        {
+            Log.i(TAG, "Temperature unit is set to metric");
+            isMetric = true;
+        }
+        else
+        {
+            isMetric = false;
+        }
+
         for(int i = 0; i < weatherArray.length(); i++) {
             // For now, using the format "Day, description, hi/low"
             String day;
             String description;
             String highAndLow;
+            String pressure;
+            String speed;
+            String humidity;
+
 
             // Get the JSON object representing the day
             JSONObject dayForecast = weatherArray.getJSONObject(i);
+
+
 
             // The date/time is returned as a long.  We need to convert that
             // into something human-readable, since most people won't read "1400356800" as
@@ -340,7 +377,12 @@ public class MainActivity extends ActionBarActivity{
 
             // description is in a child array called "weather", which is 1 element long.
             JSONObject weatherObject = dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
+
+
             description = weatherObject.getString(OWM_DESCRIPTION);
+            pressure = dayForecast.getString(OWM_PRESSURE);
+            speed = dayForecast.getString(OWM_SPEED);
+            humidity = dayForecast.getString(OWM_HUMIDITY);
 
             // Temperatures are in a child object called "temp".  Try not to name variables
             // "temp" when working with temperature.  It confuses everybody.
@@ -355,21 +397,25 @@ public class MainActivity extends ActionBarActivity{
             WeatherItems items = new WeatherItems();
             items.setDate(day);
             items.setCondition(description);
-            items.setHighTemp(high);
-            items.setLowTemp(low);
-
+            items.setHighTemp(Utility.formatTemperature(getActivity(), high, isMetric));
+            items.setLowTemp(Utility.formatTemperature(getActivity(), low, isMetric));
+            items.setPressue(pressure);
+            items.setHumidity(humidity);
+            items.setWind(speed);
             // Set the data into the array
             mItems[i] = items;
 
         }
 
-    runOnUiThread(new Runnable() {
-    @Override
-    public void run() {
-        mWeatherListAdapter = new WeatherListAdapter(MainActivity.this, mItems);
-        weatherData.setAdapter(mWeatherListAdapter);
-    }
-    });
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mWeatherListAdapter = new WeatherListAdapter(getActivity(), mItems);
+                loader.setVisibility(View.INVISIBLE);
+                weatherData.setAdapter(mWeatherListAdapter);
+
+            }
+        });
 
 
 
@@ -381,86 +427,4 @@ public class MainActivity extends ActionBarActivity{
 
 
 
-
-
-    public static double getMaxTemperatureForDay(String weatherJsonStr, int dayIndex) throws JSONException
-    {
-        // Create a new JSON Object to parse the String data
-        JSONObject jsonObject = new JSONObject(weatherJsonStr);
-        // Create a JSON array object to get the "list" array key
-        JSONArray jsonArray = jsonObject.getJSONArray("list");
-        // Create a JSON object which gets the day depending on which key was supplied
-        JSONObject dayObject = jsonArray.getJSONObject(dayIndex);
-
-        // Get the temperature JSON data
-        JSONObject temperature = dayObject.getJSONObject("temp");
-
-        return temperature.getDouble("max");
-
-
-    }
-
-
-
-
-
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        switch(id)
-        {
-            case R.id.action_settings:
-                // Open the settings activity
-                Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
-                startActivity(settingsIntent);
-                break;
-            case R.id.action_refresh:
-                updateWeather();
-                break;
-            case R.id.action_location:
-                openPreferredLocationInMap();
-                break;
-
-
-
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    // Opens the users location from the zip code set
-    private void openPreferredLocationInMap() {
-
-        SharedPreferences mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String location = mSharedPreferences.getString(getString(R.string.key_pref_location), getString(R.string.location_default));
-        Uri geoLocation = Uri.parse("geo:0,0?").buildUpon().appendQueryParameter("q", location).build();
-
-
-        Intent locationIntent = new Intent(Intent.ACTION_VIEW);
-        locationIntent.setData(geoLocation);
-        startActivity(locationIntent);
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-        super.onSaveInstanceState(outState, outPersistentState);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-    }
 }

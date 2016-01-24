@@ -1,4 +1,4 @@
-package au.com.wsit.sunshine;
+package au.com.wsit.sunshine.ui;
 
 import android.content.Intent;
 import android.support.v4.view.MenuItemCompat;
@@ -9,6 +9,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v7.widget.ShareActionProvider;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import au.com.wsit.sunshine.R;
+import au.com.wsit.sunshine.utils.SunshineConstants;
 
 
 public class DetailActivity extends ActionBarActivity
@@ -18,18 +22,14 @@ public class DetailActivity extends ActionBarActivity
     public static final String FORECAST_SHARE_HASHTAG = " #SunshineApp";
     public String mForecastStr;
 
-    TextView weatherData;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
-        weatherData = (TextView) findViewById(R.id.weather_data_textView);
 
-        Intent intent = getIntent();
-        mForecastStr = intent.getStringExtra(SunshineConstants.KEY_FORECAST_DATA);
-        weatherData.setText(mForecastStr);
 
 
     }

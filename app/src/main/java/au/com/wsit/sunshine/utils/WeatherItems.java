@@ -6,10 +6,41 @@ package au.com.wsit.sunshine.utils;
 public class WeatherItems
 {
 
-    double HighTemp;
-    double LowTemp;
+    String HighTemp;
+    String LowTemp;
     String date;
     String condition;
+
+    String mHumidity;
+    String mPressue;
+    String mWind;
+
+    public String getHumidity() {
+        return mHumidity;
+    }
+
+    public void setHumidity(String humidity) {
+        mHumidity = humidity;
+    }
+
+    public String getPressue() {
+        return mPressue;
+    }
+
+    public void setPressue(String pressue) {
+        mPressue = pressue;
+    }
+
+    public String getWind() {
+        return mWind;
+    }
+
+    public void setWind(String wind) {
+        mWind = wind;
+    }
+
+
+
 
     public String getCondition()
     {
@@ -21,19 +52,19 @@ public class WeatherItems
         condition = forecast;
     }
 
-    public double getHighTemp() {
+    public String getHighTemp() {
         return HighTemp;
     }
 
-    public void setHighTemp(double highTemp) {
+    public void setHighTemp(String highTemp) {
         HighTemp = highTemp;
     }
 
-    public double getLowTemp() {
+    public String getLowTemp() {
         return LowTemp;
     }
 
-    public void setLowTemp(double lowTemp) {
+    public void setLowTemp(String lowTemp) {
         LowTemp = lowTemp;
     }
 

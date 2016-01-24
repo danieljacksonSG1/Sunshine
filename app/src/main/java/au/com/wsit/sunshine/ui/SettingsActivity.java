@@ -1,4 +1,4 @@
-package au.com.wsit.sunshine;
+package au.com.wsit.sunshine.ui;
 
 /**
  * Created by guyb on 7/11/15.
@@ -15,6 +15,8 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.view.KeyEvent;
+
+import au.com.wsit.sunshine.R;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings.

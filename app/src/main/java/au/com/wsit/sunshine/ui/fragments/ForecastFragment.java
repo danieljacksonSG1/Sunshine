@@ -1,6 +1,10 @@
 package au.com.wsit.sunshine.ui.fragments;
 
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -33,6 +37,7 @@ import java.text.SimpleDateFormat;
 
 import au.com.wsit.sunshine.R;
 import au.com.wsit.sunshine.adapters.WeatherListAdapter;
+import au.com.wsit.sunshine.service.SunshineService;
 import au.com.wsit.sunshine.ui.MainActivity;
 import au.com.wsit.sunshine.utils.SunshineConstants;
 import au.com.wsit.sunshine.utils.Utility;
@@ -150,8 +155,21 @@ public class ForecastFragment extends Fragment
         Log.i(TAG, "Temperature unit is: " + temperatureUnit);
 
         // Refresh the weather data
-        FetchWeatherTask weatherTask = new FetchWeatherTask();
-        weatherTask.execute(location, temperatureUnit);
+//        FetchWeatherTask weatherTask = new FetchWeatherTask();
+//        weatherTask.execute(location, temperatureUnit);
+
+        // Pending Intent
+        Intent alarmIntent = new Intent(getActivity(), SunshineService.AlarmReceiver.class);
+        alarmIntent.putExtra(SunshineService.LOCATION_QUERY_EXTRA, "90210");
+        PendingIntent pi = PendingIntent.getBroadcast(getActivity(), 0, alarmIntent, PendingIntent.FLAG_ONE_SHOT);
+        AlarmManager am = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
+        am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()+5000, pi);
+
+        // Start the service
+        Intent intent = new Intent(getActivity(), SunshineService.class);
+        intent.putExtra(SunshineService.LOCATION_QUERY_EXTRA, Utility.getPreferredLocation(getActivity()));
+        getActivity().startService(intent);
+
 
     }
 

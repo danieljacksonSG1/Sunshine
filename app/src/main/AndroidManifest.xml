@@ -38,6 +38,14 @@
             android:exported="true"
             android:permission="au.com.wsit.LICENSE_TO_KILL"/>
 
+        <service android:name=".service.SunshineService" >
+
+        </service>
+        <receiver android:name=".service.SunshineService$AlarmReceiver" android:enabled="true">
+
+        </receiver>
+
+
 
 
 
@@ -48,7 +56,8 @@
                 android:label="Licenced to Kill">
 
     </permission>
-    <service android:name=".service.SunshineService" />
+
+
 
 
 </manifest>
